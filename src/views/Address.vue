@@ -23,8 +23,8 @@
               Written by <a :href="'/#/address/' + data.address">{{ data.address }}</a> 
               at block <a :href="'/#/block/' + data.block">{{ data.block }}</a>
               <hr>
-              <a :href="'/#/uuid/' + data.uuid" class="btn btn-primary">Show details</a>
-              <a v-if="data.is_file === true" :href="idanode + '/ipfs/' + data.data" target="_blank" style="margin-left:20px" class="btn btn-primary">Download file</a>
+              <a :href="'/#/uuid/' + data.uuid" class="btn btn-primary" style="margin: 10px">Show details</a>
+              <a v-if="data.is_file === true" :href="idanode + '/ipfs/' + data.data" target="_blank" style="margin: 10px" class="btn btn-primary">Download file</a>
             </div>
           </div>
         </div>

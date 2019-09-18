@@ -7,6 +7,7 @@
         </div>
         <div v-if="!isLoading" style="width: 100%; margin-top:20px">
           <h5 style="margin-top:20px">Raw block details {{ $route.params.block }}</h5>
+          <a :href="'https://explorer.scryptachain.org/block/' + $route.params.block" target="_blank">Show in block explorer</a>
           <div class="card" style="width: 100%; margin-top:20px">
             <div class="card-body">
               <pre style="text-align:left">{{ block }}</pre>
