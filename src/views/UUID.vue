@@ -2,7 +2,7 @@
   <div class="container">
     <div class="row">
       <div class="col-12">
-        <h5 style="margin-top:20px">Proof for {{ $route.params.uuid }}</h5>
+        <h5 style="margin-top:20px">Proof for<br><span style="font-size:15px">{{ $route.params.uuid }}</span></h5>
         <div v-if="isLoading" style="padding:45vh 0 0 0">
           Loading data, please wait...
         </div>
@@ -31,8 +31,13 @@
                 type="password"
                 placeholder="Enter decryption password"
               ></b-form-input><br>
-              <div v-if="data.is_file === true" class="btn btn-primary" v-on:click="decryptFile()">DECRYPT FILE</div>
-              <div v-if="data.is_file === false" class="btn btn-primary" v-on:click="decryptData()">DECRYPT DATA</div>
+              <div v-if="!isDecrypting">
+                <div v-if="data.is_file === true" class="btn btn-primary" v-on:click="decryptFile()">DECRYPT FILE</div>
+                <div v-if="data.is_file === false" class="btn btn-primary" v-on:click="decryptData()">DECRYPT DATA</div>
+              </div>
+              <div v-if="isDecrypting">
+                Decrypting, please wait...
+              </div>
             </div>
           </div>
         </div>
@@ -104,14 +109,13 @@ export default {
           window.ScryptaCore.decryptFile(data, app.decryptPwd).then(decrypted => {
               if(decrypted !== false){
                 let type = fileType(decrypted)
-
+                app.data.protocol = ''
                 var saveByteArray = (function () {
                     var a = document.createElement("a");
                     document.body.appendChild(a);
                     a.style = "display: none";
                     return function (data, name) {
                         var blob = new Blob(data, {type: "octet/stream"})
-                        
                         let mimexp = type.mime.split('/')
                         if(mimexp[0] === 'image'){
                           var reader = new FileReader();
