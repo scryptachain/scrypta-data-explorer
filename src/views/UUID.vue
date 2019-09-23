@@ -16,6 +16,7 @@
               <span v-if="data.mime.mime">File Type: {{ data.mime.mime.toUpperCase() }}<br></span>
             </div>
             <p v-if="data.is_file === false" class="card-text">{{ data.data }}</p>
+            <img :src="imgb64" v-if="imgb64" width="100%">
             UUID is <a :href="'/#/uuid/' + data.uuid">{{ data.uuid }}</a><br>
             Written by <a :href="'/#/address/' + data.address">{{ data.address }}</a> 
             at block <a :href="'/#/block/' + data.block">{{ data.block }}</a><br>
@@ -60,7 +61,8 @@ export default {
       isLoading: true,
       isDecrypting: false,
       data: {},
-      decryptPwd: ''
+      decryptPwd: '',
+      imgb64: ''
     }
   },
   async mounted() {
@@ -108,12 +110,24 @@ export default {
                     document.body.appendChild(a);
                     a.style = "display: none";
                     return function (data, name) {
-                        var blob = new Blob(data, {type: "octet/stream"}),
-                            url = window.URL.createObjectURL(blob);
-                        a.href = url;
-                        a.download = name;
-                        a.click();
-                        window.URL.revokeObjectURL(url);
+                        var blob = new Blob(data, {type: "octet/stream"})
+                        
+                        let mimexp = type.mime.split('/')
+                        if(mimexp[0] === 'image'){
+                          var reader = new FileReader();
+                          reader.onload = function() {
+                            var bdata = btoa(reader.result);
+                            var datauri = 'data:' + type.mime + ';base64,' + bdata;
+                            app.imgb64 = datauri
+                          };
+                          reader.readAsBinaryString(blob);
+                        }else{
+                          var url = window.URL.createObjectURL(blob);
+                          a.href = url;
+                          a.download = name;
+                          a.click();
+                          window.URL.revokeObjectURL(url);
+                        }
                         app.isDecrypting = false
                     };
                 }());
