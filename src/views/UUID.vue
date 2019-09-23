@@ -21,6 +21,18 @@
             at block <a :href="'/#/block/' + data.block">{{ data.block }}</a><br>
             Served by <a :href="idanode" target="_blank">{{ idanode }}</a> 
             <br>
+            <div v-if="data.protocol === 'E://'">
+              <hr>
+              This <span v-if="data.is_file === true">file</span><span v-if="data.is_file === false">data</span>  is encrypted.<br>
+              Write password to reveal decrypted <span v-if="data.is_file === true">file</span><span v-if="data.is_file === false">data</span>:<br><br>
+              <b-form-input
+                v-model="decryptPwd"
+                type="password"
+                placeholder="Enter decryption password"
+              ></b-form-input><br>
+              <div v-if="data.is_file === true" class="btn btn-primary" v-on:click="decryptFile()">DECRYPT FILE</div>
+              <div v-if="data.is_file === false" class="btn btn-primary" v-on:click="decryptData()">DECRYPT DATA</div>
+            </div>
           </div>
         </div>
         <br>
@@ -37,6 +49,8 @@
 
 <script>
 import axios from 'axios'
+const fileType = require('file-type')
+
 export default {
   name: 'Explorer',
   data () {
@@ -44,7 +58,9 @@ export default {
       idanode: 'https://idanodejs01.scryptachain.org',
       axios: axios,
       isLoading: true,
-      data: {}
+      isDecrypting: false,
+      data: {},
+      decryptPwd: ''
     }
   },
   async mounted() {
@@ -74,6 +90,53 @@ export default {
         }
       }
       app.isLoading = false
+    }
+  },
+  methods: {
+    decryptFile() {
+      const app = this
+      if(app.isDecrypting === false && app.decryptPwd.length > 0){
+        app.isDecrypting = true
+        app.axios.get(app.idanode + '/ipfs/buffer/' + app.data.data).then(ipfs => {
+          let data = ipfs.data.data[0].content.data
+          window.ScryptaCore.decryptFile(data, app.decryptPwd).then(decrypted => {
+              if(decrypted !== false){
+                let type = fileType(decrypted)
+
+                var saveByteArray = (function () {
+                    var a = document.createElement("a");
+                    document.body.appendChild(a);
+                    a.style = "display: none";
+                    return function (data, name) {
+                        var blob = new Blob(data, {type: "octet/stream"}),
+                            url = window.URL.createObjectURL(blob);
+                        a.href = url;
+                        a.download = name;
+                        a.click();
+                        window.URL.revokeObjectURL(url);
+                        app.isDecrypting = false
+                    };
+                }());
+
+                saveByteArray([decrypted], app.data.data + '.' + type.ext);
+              }else{
+                app.isDecrypting = false
+                alert('Wrong password!')
+              }
+          })
+        })
+      }
+    },
+    decryptData() {
+      const app = this
+      window.ScryptaCore.decryptData(app.data.data, app.decryptPwd).then(decrypted => {
+          if(decrypted !== false){
+            app.data.data = decrypted
+            app.data.protocol = '' 
+          }else{
+            alert('Wrong password!')
+          }
+      })
     }
   }
 }
