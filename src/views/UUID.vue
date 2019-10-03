@@ -2,27 +2,46 @@
   <div class="container">
     <div class="row">
       <div class="col-12">
-        <h5 style="margin-top:20px">Proof for<br><span style="font-size:15px">{{ $route.params.uuid }}</span></h5>
+        <div class="show-print">
+          <img src="../assets/logo.png" width="100" style="margin-bottom:20px">
+        </div>
+        <h5 style="margin-top:20px">Proof of Existence for<br><span style="font-size:15px">{{ $route.params.uuid }}</span></h5>
         <div v-if="isLoading" style="padding:45vh 0 0 0">
           Loading data, please wait...
+        </div>
+        <div class="show-print" style="margin-top:30px">
+            This data have been timestamped using Scrypta Blockchain and<br>is maintained over the Scrypta Network.<br>
+            <div v-if="data.protocol === 'E://'">
+              <br>This data have been crypted using an AES-256 algorithm.
+            </div>
+            <br>All the informations below can be fetched directly from<br>the blockchain or using the IdANode technology.<br><br>
+            The owner of the address {{ data.address }}<br>that owns the relative private key is the legal owner of this data.
         </div>
         <div v-if="!isLoading" class="card" style="width: 100%; margin-top:20px">
           <div class="card-body">
             <h5 class="card-title" v-if="data.title !== undefined && data.title !== 'undefined' && data.title !== ''">{{ data.title }}</h5>
             <h5 class="card-title" v-if="data.refID !== undefined && data.refID !== 'undefined' && data.refID !== ''">{{ data.refID }}</h5>
             <div v-if="data.mime">
-              <img :src="idanode + '/ipfs/' + data.data" width="100%" v-if="data.mime.type === 'image'">
+              <img :src="idanode + '/ipfs/' + data.data" width="100%" style="margin-bottom:15px" v-if="data.mime.type === 'image'">
+            </div>
+            <div v-if="imgb64">
+              <img :src="imgb64" v-if="imgb64" style="margin-bottom:15px" width="100%">
+            </div>
+            <div v-if="data.is_file === true">
               IPFS hash: <a :href="idanode + '/ipfs/' + data.data" target="_blank">{{data.data}}</a><br>
+            </div>
+            <div v-if="data.mime">
               <span v-if="data.mime.mime">File Type: {{ data.mime.mime.toUpperCase() }}<br></span>
             </div>
             <p v-if="data.is_file === false" class="card-text">{{ data.data }}</p>
-            <img :src="imgb64" v-if="imgb64" width="100%">
             UUID is <a :href="'/#/uuid/' + data.uuid">{{ data.uuid }}</a><br>
             Written by <a :href="'/#/address/' + data.address">{{ data.address }}</a> 
             at block <a :href="'/#/block/' + data.block">{{ data.block }}</a><br>
-            Served by <a :href="idanode" target="_blank">{{ idanode }}</a> 
-            <br>
-            <div v-if="data.protocol === 'E://'">
+            Timestamped on {{ extdate }}
+            <br class="hide-print"><br class="hide-print">
+            <div class="btn btn-success hide-print" v-on:click="print()">PRINT CERTIFICATE</div>
+            <br class="hide-print">
+            <div v-if="data.protocol === 'E://'" class="hide-print">
               <hr>
               This <span v-if="data.is_file === true">file</span><span v-if="data.is_file === false">data</span>  is encrypted.<br>
               Write password to reveal decrypted <span v-if="data.is_file === true">file</span><span v-if="data.is_file === false">data</span>:<br><br>
@@ -42,7 +61,7 @@
           </div>
         </div>
         <br>
-        <h5>Raw data</h5>
+        <h5>Raw data explorer</h5>
         <div class="card" style="width: 100%; margin-top:20px">
             <div class="card-body">
               <pre style="text-align:left">{{ data }}</pre>
@@ -67,11 +86,13 @@ export default {
       isDecrypting: false,
       data: {},
       decryptPwd: '',
+      extdate: '',
       imgb64: ''
     }
   },
   async mounted() {
     const app = this
+    app.idanode = await window.ScryptaCore.connectNode()
     let check = await app.axios.get(app.idanode + '/wallet/getinfo').catch(err => {
       console.log(err)
       alert('There\'s an error on IdaNode, please retry!')
@@ -93,6 +114,8 @@ export default {
           }else{
             app.data = readreturn.data.data[i]
           }
+          let time = app.data['time'] * 1000
+          app.extdate = new Date(time).toUTCString()
           delete app.data['id']
         }
       }
@@ -100,6 +123,9 @@ export default {
     }
   },
   methods: {
+    print() {
+      window.print()
+    },
     decryptFile() {
       const app = this
       if(app.isDecrypting === false && app.decryptPwd.length > 0){
@@ -160,6 +186,11 @@ export default {
 }
 </script>
 
-<!-- Add "scoped" attribute to limit CSS to this component only -->
-<style scoped>
+<style>
+  .show-print{display: none}
+  @media print{
+    .hide-print{display:none!important}
+    .show-print{display: block!important}
+    pre{border:0}
+  }
 </style>

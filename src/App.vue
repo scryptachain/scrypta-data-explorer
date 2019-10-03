@@ -20,8 +20,8 @@
       </b-collapse>-->
     </b-navbar>
     <router-view/>
-    <hr>
-    <span style="font-size:11px">Scrypta Proof is an open-source project by Scrypta Task Force</span>
+    <hr class="hide-print">
+    <span class="hide-print" style="font-size:11px">Scrypta Proof is an open-source project by Scrypta Task Force</span>
     <br><br>
   </div>
 </template>

@@ -33,6 +33,7 @@ export default {
   },
   async mounted() {
     const app = this
+    app.idanode = await window.ScryptaCore.connectNode()
     let check = await app.axios.get(app.idanode + '/wallet/getinfo').catch(err => {
       console.log(err)
       alert('There\'s an error on IdaNode, please retry!')
