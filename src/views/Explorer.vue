@@ -146,8 +146,6 @@ export default {
         if(readreturn.data.data[i].uuid !== undefined && app.bans.uuids.indexOf(readreturn.data.data[i].uuid) === -1){
           if(readreturn.data.data[i].is_file === true){
             let mime = await app.axios.get(app.idanode + '/ipfs/type/' + readreturn.data.data[i].data)
-              // alert('There\'s an error on IdaNode, please retry!')
-            })
             readreturn.data.data[i].mime = mime.data.data
             app.last.push(readreturn.data.data[i])
           }else{
