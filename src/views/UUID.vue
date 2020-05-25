@@ -34,12 +34,16 @@
               <span v-if="data.mime.mime">File Type: {{ data.mime.mime.toUpperCase() }}<br></span>
             </div>
             <p v-if="data.is_file === false" class="card-text">{{ data.data }}</p>
-            UUID is <a :href="'/#/uuid/' + data.uuid">{{ data.uuid }}</a><br>
-            Written by <a :href="'/#/address/' + data.address">{{ data.address }}</a> 
-            at block <a :href="'/#/block/' + data.block">{{ data.block }}</a><br>
-            Timestamped on {{ extdate }}
+            <div style="text-align:center">
+              UUID is <a :href="'/#/uuid/' + data.uuid">{{ data.uuid }}</a><br>
+              Written by <a :href="'/#/address/' + data.address">{{ data.address }}</a> 
+              at block <a :href="'/#/block/' + data.block">{{ data.block }}</a><br>
+              Timestamped on {{ extdate }}
+            </div>
             <br class="hide-print"><br class="hide-print">
-            <div class="btn btn-success hide-print" v-on:click="print()">PRINT CERTIFICATE</div>
+            <div style="text-align:center">
+              <div class="btn btn-success hide-print" v-on:click="print()">PRINT CERTIFICATE</div>
+            </div>
             <br class="hide-print">
             <div v-if="data.protocol === 'E://'" class="hide-print">
               <hr>

@@ -1,25 +1,17 @@
 <template>
   <div id="app">
-    <b-navbar toggleable="lg" style="text-align:center" type="dark" variant="primary">
-      <b-navbar-brand href="/#/" style="display:inline-block;margin:0 auto;"><img src="./assets/logo.png" height="30" style="float:left; margin-right:10px;">Proof</b-navbar-brand>
+    <b-navbar toggleable="lg" style="text-align:left; position:fixed; top:0; left:0; width:100%; z-index:999; background:#333!important; font-size:12px;" type="dark" variant="primary">
+      <b-navbar-brand href="/#/" style="display:inline-block;margin:0 auto; font-size:12px!important;"><img src="./assets/logo.png" height="20" style="float:left; font-size:12px!important; margin-right:10px;">Proof - Blockchain Data Explorer</b-navbar-brand>
 
-      <!--<b-navbar-toggle target="nav-collapse"></b-navbar-toggle>
+      <b-navbar-toggle target="nav-collapse"></b-navbar-toggle>
 
       <b-collapse id="nav-collapse" is-nav>
         <b-navbar-nav class="ml-auto">
-          <b-nav-item href="/#/">Explorer</b-nav-item>
-          <b-nav-item href="/#/about">About</b-nav-item>
+          <b-nav-item target="_blank" href="https://scrypta.wiki">Docs</b-nav-item>
         </b-navbar-nav>
-
-        <b-navbar-nav class="ml-auto">
-          <b-nav-form>
-            <b-form-input size="md" class="mr-sm-4" style="font-size:12px" placeholder="Address or UUID"></b-form-input>
-            <b-button size="sm" class="my-2 my-sm-0" type="submit">Search</b-button>
-          </b-nav-form>
-        </b-navbar-nav>
-      </b-collapse>-->
+      </b-collapse>
     </b-navbar>
-    <router-view/>
+    <router-view style="margin-top:50px;"/>
     <hr class="hide-print">
     <span class="hide-print" style="font-size:11px">Scrypta Proof is an open-source project by Scrypta Task Force</span>
     <br><br>
@@ -32,6 +24,25 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-align: center;
-    color: #2c3e50;
+    color: #fff;
+    background: #222;
+  }
+  .card{
+    background:#222!important;
+    color:#ddd!important;
+  }
+  pre{
+    color:#ddd!important;
+  }
+  .btn-primary{
+    background: #d8213b!important;
+    border-color: #d8213b!important;
+    color:#fff!important;
+  }
+  a{
+    color: #d8213b!important;
+  }
+  nav a{
+    color:#ddd!important;
   }
 </style>

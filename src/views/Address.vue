@@ -19,9 +19,11 @@
                 <span v-if="data.mime.mime">File Type: {{ data.mime.mime.toUpperCase() }}<br></span>
               </div>
               <p v-if="data.is_file === false" class="card-text">{{ data.data }}</p>
-              UUID is <a :href="'/#/uuid/' + data.uuid">{{ data.uuid }}</a><br>
-              Written by <a :href="'/#/address/' + data.address">{{ data.address }}</a> 
-              at block <a :href="'/#/block/' + data.block">{{ data.block }}</a>
+              <div style="text-align:center">
+                UUID is <a :href="'/#/uuid/' + data.uuid">{{ data.uuid }}</a><br>
+                Written by <a :href="'/#/address/' + data.address">{{ data.address }}</a> 
+                at block <a :href="'/#/block/' + data.block">{{ data.block }}</a>
+              </div>
               <hr>
               <a :href="'/#/uuid/' + data.uuid" class="btn btn-primary" style="margin: 10px">Show details</a>
               <a v-if="data.is_file === true" :href="idanode + '/ipfs/' + data.data" target="_blank" style="margin: 10px" class="btn btn-primary">Download file</a>
