@@ -106,7 +106,7 @@ export default {
     const app = this
     app.idanode = await window.ScryptaCore.connectNode()
     let check = await app.axios.get(app.idanode + '/wallet/getinfo').catch(err => {
-      console.log(err)
+      // console.log(err)
     })
     if(check.data.blocks > 0){
       app.filterData()
@@ -141,18 +141,18 @@ export default {
       var readreturn = []
       if(!hasFilter){
         readreturn = await app.axios.post(app.idanode + '/read').catch(err => {
-          console.log(err)
+          // console.log(err)
         })
       }else{
         readreturn = await app.axios.post(app.idanode + '/read', filters).catch(err => {
-          console.log(err)
+          // console.log(err)
         })
       }
       for(let i in readreturn.data.data){
         if(readreturn.data.data[i].uuid !== undefined && app.bans.uuids.indexOf(readreturn.data.data[i].uuid) === -1){
           if(readreturn.data.data[i].is_file === true){
             let mime = await app.axios.get(app.idanode + '/ipfs/type/' + readreturn.data.data[i].data).catch(err => {
-              console.log(err)
+              // console.log(err)
               // alert('There\'s an error on IdaNode, please retry!')
             })
             readreturn.data.data[i].mime = mime.data.data
