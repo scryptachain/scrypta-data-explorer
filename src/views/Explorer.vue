@@ -25,7 +25,7 @@
         <div v-if="last.length === 0" style="padding:45vh 0">
           Loading data, please wait...
         </div>
-        <div v-if="unconfirmedTxs">
+        <div v-if="unconfirmedTxs && last.length > 0">
           <h3 style="margin-top:30px">Unconfirmed transactions</h3>
           <div v-for="data in last" v-bind:key="data.uuid">
             <div class="card" style="width: 100%; margin-top:20px" v-if="data.block === undefined">
@@ -151,7 +151,7 @@ export default {
           }else{
             app.last.push(readreturn.data.data[i])
           }
-          if(readreturn.data.data[i].block === undefined){
+          if(readreturn.data.data[i].block === undefined || readreturn.data.data[i].block === null){
             app.unconfirmedTxs = true
           }
         }
