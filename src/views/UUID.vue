@@ -88,6 +88,7 @@ export default {
       axios: axios,
       isLoading: true,
       isDecrypting: false,
+      fileType: fileType,
       data: {},
       decryptPwd: '',
       extdate: '',
@@ -136,9 +137,9 @@ export default {
         app.isDecrypting = true
         app.axios.get(app.idanode + '/ipfs/buffer/' + app.data.data).then(ipfs => {
           let data = ipfs.data.data[0].content.data
-          window.ScryptaCore.decryptFile(data, app.decryptPwd).then(decrypted => {
+          window.ScryptaCore.decryptFile(data, app.decryptPwd).then(async decrypted => {
               if(decrypted !== false){
-                let type = fileType(decrypted)
+                let type = await app.fileType.fromBuffer(decrypted)
                 app.data.protocol = ''
                 var saveByteArray = (function () {
                     var a = document.createElement("a");

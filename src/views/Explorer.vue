@@ -25,9 +25,9 @@
         <div v-if="last.length === 0" style="padding:45vh 0">
           Loading data, please wait...
         </div>
-        <div v-if="unconfirmedTxs && last.length > 0">
+        <div v-if="unconfirmedTxs.length > 0">
           <h3 style="margin-top:30px">Unconfirmed transactions</h3>
-          <div v-for="data in last" v-bind:key="data.uuid">
+          <div v-for="data in unconfirmedTxs" v-bind:key="data.uuid">
             <div class="card" style="width: 100%; margin-top:20px" v-if="data.block === undefined">
               <div class="card-body">
                 <h5 class="card-title" v-if="data.title !== undefined && data.title !== 'undefined' && data.title !== ''">{{ data.title }}</h5>
