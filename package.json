@@ -16,8 +16,10 @@
     "crypto": "^1.0.1",
     "file-type": "^15.0.0",
     "lzutf8": "^0.5.6",
+    "qrcode": "^1.4.4",
     "register-service-worker": "^1.7.1",
     "vue": "^2.6.12",
+    "vue-qrcode": "^0.3.3",
     "vue-router": "^3.4.3"
   },
   "devDependencies": {

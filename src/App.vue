@@ -28,6 +28,9 @@
     background: #222;
     min-height: calc(100vh - 50px)
   }
+  #modal-id{
+    font-family: 'Roboto Mono';
+  }
   .card{
     background:#222!important;
     color:#ddd!important;
