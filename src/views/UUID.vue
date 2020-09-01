@@ -158,7 +158,7 @@ export default {
                     };
                 }());
 
-                saveByteArray([decrypted], app.data.data + '.' + type.ext);
+                saveByteArray([decrypted], app.data.data + '.' + type.ext)
               }else{
                 app.isDecrypting = false
                 alert('Wrong password!')

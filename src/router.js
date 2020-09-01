@@ -29,6 +29,11 @@ export default new Router({
       path: '/block/:block',
       name: 'block',
       component: () => import('./views/Block.vue')
+    },
+    {
+      path: '/manent/:uuid/:privkey',
+      name: 'manent',
+      component: () => import('./views/Manent.vue')
     }
   ]
 })

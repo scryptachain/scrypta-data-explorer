@@ -26,6 +26,7 @@
     text-align: center;
     color: #fff;
     background: #222;
+    min-height: calc(100vh - 50px)
   }
   .card{
     background:#222!important;
