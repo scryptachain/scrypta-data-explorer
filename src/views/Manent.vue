@@ -5,14 +5,19 @@
         <div class="show-print">
           <img src="../assets/logo.png" width="100" style="margin-bottom:20px" />
         </div>
-        <h5 style="margin-top:20px">
-          This data have been notarized with
-          <b>Manent Mail</b>
-          <br v-if="data.data.provider" />
-          <span v-if="data.data.provider" style="font-size:15px">using provider {{ data.data.provider }}</span>
+        <h5 style="margin-top:20px; font-size:18px">
+          This data have been notarized
+          <br v-if="data.provider !== undefined" />
+          <span
+            v-if="data.provider !== undefined"
+            style="font-size:18px"
+          >using provider<br><span
+            v-if="providers[data.provider] !== undefined"
+            style="font-size:20px"
+          ><br><b>{{ providers[data.provider] }}</b></span><br><b style="font-size:11px">{{ data.provider.substr(0,6) }}...{{ data.provider.substr(-6) }}</b></span>
         </h5>
         <div v-if="isLoading" style="padding:45vh 0 0 0">Loading data, please wait...</div>
-        <div v-if="!isLoading" class="card" style="width: 100%; margin-top:20px">
+        <div v-if="!isLoading && data.data !== undefined" class="card" style="width: 100%; margin-top:20px">
           <div class="card-body">
             <h5
               class="card-title"
@@ -24,25 +29,26 @@
             >{{ data.refID }}</h5>
             <div v-if="data.data.plaintext">{{ data.data.plaintext }}</div>
             <div style="text-align:center">
-              Notarization identifier is <a href="#">{{ data.uuid }}</a>
+              Notarization identifier is
+              <a href="#">{{ data.uuid }}</a>
               <br />Blockchain address is
-              <a href = "#">{{ data.address }}</a>
+              <a href="#">{{ data.address }}</a>
               <br />Notarized at block
               <a :href="'/#/block/' + data.block">{{ data.block }}</a>
               <br />
               Timestamped on {{ extdate }}
               <hr />User is identified with hash
-              <b>{{ data.data.sender }}</b>
+              <b>{{ data.data.identity }}</b>
               <br />
               <br />
               <div class="row">
-                <div class="col-sm-10">
+                <div class="col-md-10">
                   <b-form-input
                     v-model="calculatehash"
                     placeholder="Enter user identifier and check the hash"
                   ></b-form-input>
                 </div>
-                <div class="col-sm-2">
+                <div class="col-md-2">
                   <b-button
                     variant="success"
                     style="width:100%;"
@@ -53,12 +59,12 @@
               <br />
               <div v-if="calculatedhash">
                 <b-alert
-                  v-if="calculatedhash === data.data.sender"
+                  v-if="calculatedhash === data.data.identity"
                   variant="success"
                   show
                 >You've successfully recognized the identifier written inside the blockchain.</b-alert>
                 <b-alert
-                  v-if="calculatedhash !== data.data.sender"
+                  v-if="calculatedhash !== data.data.identity"
                   variant="danger"
                   show
                 >Attention please, identifier doesn't matches. Please be sure you've written it correctly.</b-alert>
@@ -139,6 +145,9 @@ export default {
       buffers: {},
       names: {},
       mimes: {},
+      providers: {
+        "02312b96a6946285490f100dc60dcedb975b07cb80bd932be1c0357cf64e59834e": "Scrypta Manent Mail (Free Service)"
+      },
       calculatehash: "",
       calculatedhash: "",
       decryptPwd: "",
@@ -164,66 +173,79 @@ export default {
             alert("Protocol doesn't matches, redirecting!");
             window.location = "/#/uuid/" + app.$route.params.uuid;
           }
-          if (
-            app.data.data.plaintext !== undefined &&
-            app.data.data.plaintext !== ""
-          ) {
-            app.data.data.plaintext = LZUTF8.decompress(
-              app.data.data.plaintext,
-              { inputEncoding: "Base64" }
-            );
-          }
-          if (
-            app.data.data.attachments !== undefined &&
-            app.data.data.attachments.length > 0
-          ) {
-            for (let k in app.data.data.attachments) {
-              app.data.data.attachments[k].name = LZUTF8.decompress(
-                app.data.data.attachments[k].name,
+          let verify = await app.scrypta.verifyMessage(
+            app.data.data.pubkey,
+            app.data.data.signature,
+            app.data.data.message
+          );
+          if (verify !== false) {
+            app.data.provider = app.data.data.pubkey
+            app.data.fingerprint = app.data.data.signature
+            app.data.data = JSON.parse(app.data.data.message);
+            if (
+              app.data.data.plaintext !== undefined &&
+              app.data.data.plaintext !== ""
+            ) {
+              app.data.data.plaintext = LZUTF8.decompress(
+                app.data.data.plaintext,
                 { inputEncoding: "Base64" }
               );
-              try {
-                let url =
-                  "https://scrypta.sfo2.digitaloceanspaces.com/manent/" +
-                  app.data.data.attachments[k].hash;
-                let original = await app.axios.get(url, {
-                  responseType: "arraybuffer",
-                });
-                let decrypted = await app.scrypta.decryptFile(
-                  original.data,
-                  app.$route.params.privkey,
-                  true
+            }
+            if (
+              app.data.data.attachments !== undefined &&
+              app.data.data.attachments.length > 0
+            ) {
+              for (let k in app.data.data.attachments) {
+                app.data.data.attachments[k].name = LZUTF8.decompress(
+                  app.data.data.attachments[k].name,
+                  { inputEncoding: "Base64" }
                 );
-                if (decrypted !== false) {
-                  app.data.data.attachments[k].decrypted = true;
-                  app.buffers[app.data.data.attachments[k].hash] = decrypted;
-                  let ft = await FileType.fromBuffer(decrypted);
-                  app.data.data.attachments[k].filetype = ft;
-                  app.mimes[app.data.data.attachments[k].hash] = ft.mime;
-                  app.names[app.data.data.attachments[k].hash] =
-                    app.data.data.attachments[k].name;
-                } else {
-                  app.data.data.attachments[k].decrypted = false;
+                try {
+                  let url =
+                    "https://scrypta.sfo2.digitaloceanspaces.com/manent/" +
+                    app.data.address +
+                    "/" +
+                    app.data.data.attachments[k].hash;
+                  let original = await app.axios.get(url, {
+                    responseType: "arraybuffer",
+                  });
+                  let decrypted = await app.scrypta.decryptFile(
+                    original.data,
+                    app.$route.params.privkey,
+                    true
+                  );
+                  if (decrypted !== false) {
+                    app.data.data.attachments[k].decrypted = true;
+                    app.buffers[app.data.data.attachments[k].hash] = decrypted;
+                    let ft = await FileType.fromBuffer(decrypted);
+                    app.data.data.attachments[k].filetype = ft;
+                    app.mimes[app.data.data.attachments[k].hash] = ft.mime;
+                    app.names[app.data.data.attachments[k].hash] =
+                      app.data.data.attachments[k].name;
+                  } else {
+                    app.data.data.attachments[k].decrypted = false;
+                  }
+                  let checkhash = crypto
+                    .createHash("sha256")
+                    .update(decrypted)
+                    .digest("hex");
+                  if (checkhash === app.data.data.attachments[k].hash) {
+                    app.data.data.attachments[k].verified = true;
+                  } else {
+                    app.data.data.attachments[k].verified = false;
+                  }
+                } catch (e) {
+                  alert("Can't retrieve original file!");
                 }
-                let checkhash = crypto
-                  .createHash("sha256")
-                  .update(decrypted)
-                  .digest("hex");
-                if (checkhash === app.data.data.attachments[k].hash) {
-                  app.data.data.attachments[k].verified = true;
-                } else {
-                  app.data.data.attachments[k].verified = false;
-                }
-              } catch (e) {
-                console.log(e);
-                alert("Can't retrieve original file!");
               }
             }
+            app.data.refID = refID;
+            let time = app.data["time"] * 1000;
+            app.extdate = new Date(time).toUTCString();
+            delete app.data["_id"];
+          }else{
+            alert('Can\'t verify provider signature!')
           }
-          app.data.refID = refID;
-          let time = app.data["time"] * 1000;
-          app.extdate = new Date(time).toUTCString();
-          delete app.data["id"];
         }
       }
       app.isLoading = false;
