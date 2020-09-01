@@ -32,7 +32,7 @@
               Notarization identifier is
               <a href="#">{{ data.uuid }}</a>
               <br />Blockchain address is
-              <a href="#">{{ data.address }}</a>
+              <a :href="'/#/address/' + data.address">{{ data.address }}</a>
               <br />Notarized at block
               <a :href="'/#/block/' + data.block">{{ data.block }}</a>
               <br />
@@ -284,7 +284,6 @@ export default {
           }
         }catch(e){
           app.error = e
-          console.log('ERROR', e)
         }
       })
     },
