@@ -204,7 +204,6 @@ export default {
           }
         }catch(e){
           app.error = e
-          console.log('ERROR', e)
         }
       })
     },
