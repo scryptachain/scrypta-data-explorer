@@ -171,6 +171,9 @@ export default {
       });
       for (let i in readreturn.data.data) {
         if (readreturn.data.data[i].uuid !== undefined) {
+          if(readreturn.data.data[i].protocol === 'manent://'){
+            window.location = '/#/manent/' + readreturn.data.data[i].uuid + '/verify'
+          }
           if (readreturn.data.data[i].is_file === true) {
             let mime = await app.axios.get(
               app.idanode + "/ipfs/type/" + readreturn.data.data[i].data

@@ -50,7 +50,7 @@
               <b>{{ data.data.identity }}</b>
               <br />
               <br />
-              <div class="row">
+              <div class="row" v-if="!calculatedhash">
                 <div class="col-md-10">
                   <b-form-input
                     v-model="calculatehash"
@@ -112,8 +112,35 @@
                     {{ file.hash }}.
                     <br />This file have been successfully
                     <b style="color:green">decrypted</b> and
-                    <b style="color:green">verified</b>.
+                    <b style="color:green">verified</b> from Documenta Space.
                   </b>
+                  <br />
+                  <br />
+                  <div v-if="!verified[file.hash]">
+                    <span>Please use box above to manually verify your local copy of the file:</span>
+                    <br />
+                    <br />
+                    <b-form-group
+                      label="Verify local file:"
+                      label-for="file-small"
+                      label-cols-sm="2"
+                      label-size="sm"
+                      v-if="!isVerifying"
+                    >
+                      <b-form-file
+                        :id="'file-' + file.hash"
+                        v-model="checks[file.hash]"
+                        v-on:input="readFile(file.hash)"
+                        size="sm"
+                      ></b-form-file>
+                    </b-form-group>
+                    <div v-if="isVerifying">Verifying local file, please wait...</div>
+                  </div>
+                  <div v-if="verified[file.hash]">
+                    <span
+                      style="color:green"
+                    >You've successfully verified the file!</span>
+                  </div>
                 </b-card-text>
                 <b-button
                   class="mobile-relative"
@@ -124,9 +151,33 @@
                   v-on:click="saveFile(file.hash)"
                 >Download</b-button>
                 <b-card-text v-if="!file.verified || !file.decrypted">
-                  <span
-                    style="color:#f00"
-                  >Can't decrypt and verify file, please check if the file exists on Documenta Space.</span>
+                  <div v-if="!verified[file.hash]">
+                    <span
+                      style="color:#f00"
+                    >Can't automatically decrypt and verify file, please use the box above to manually verify your local copy:</span>
+                    <br />
+                    <br />
+                    <b-form-group
+                      label="Verify local file:"
+                      label-for="file-small"
+                      label-cols-sm="2"
+                      label-size="sm"
+                      v-if="!isVerifying"
+                    >
+                      <b-form-file
+                        :id="'file-' + file.hash"
+                        v-model="checks[file.hash]"
+                        v-on:input="readFile(file.hash)"
+                        size="sm"
+                      ></b-form-file>
+                    </b-form-group>
+                    <div v-if="isVerifying">Verifying local file, please wait...</div>
+                  </div>
+                  <div v-if="verified[file.hash]">
+                    <span
+                      style="color:green"
+                    >You've successfully verified the file!</span>
+                  </div>
                 </b-card-text>
               </b-card>
             </div>
@@ -188,6 +239,9 @@ export default {
       decryptPwd: "",
       proved: false,
       extdate: "",
+      isVerifying: false,
+      checks: {},
+      verified: {},
       imgb64: "",
     };
   },
@@ -329,6 +383,36 @@ export default {
       var fileName = app.names[hash];
       link.download = fileName;
       link.click();
+    },
+    readFile(file) {
+      const app = this;
+      app.isVerifying = true;
+      return new Promise((response) => {
+        var reader = new FileReader();
+        reader.onload = function (event) {
+          var readed = event.target.result;
+          let hash = crypto
+            .createHash("sha256")
+            .update(new Uint8Array(readed))
+            .digest("hex");
+          if (file === hash.toString()) {
+            app.verified[file] = {
+              hash: hash,
+              filename: file.name,
+              size: file.size,
+              lastModified: file.lastModified,
+              type: file.type,
+            };
+            app.isVerifying = false;
+            response(true);
+          } else {
+            app.isVerifying = false;
+            response(false);
+          }
+        };
+
+        reader.readAsArrayBuffer(app.checks[file]);
+      });
     },
   },
 };
