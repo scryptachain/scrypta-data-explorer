@@ -49,16 +49,10 @@ export default {
   async mounted() {
     const app = this
     app.idanode = await window.ScryptaCore.connectNode()
-    let check = await app.axios.get(app.idanode + '/wallet/getinfo').catch(err => {
-      console.log(err)
-      alert('There\'s an error on IdaNode, please retry!')
-    })
+    let check = await app.axios.get(app.idanode + '/wallet/getinfo')
     if(check.data.blocks > 0){
       let readreturn = await app.axios.post(app.idanode + '/read', {
         address: app.$route.params.address
-      }).catch(err => {
-        console.log(err)
-        alert('There\'s an error on IdaNode, please retry!')
       })
       for(let i in readreturn.data.data){
         if(readreturn.data.data[i].uuid !== undefined){
