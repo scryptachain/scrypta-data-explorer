@@ -74,12 +74,14 @@
               <div class="btn btn-success hide-print" v-on:click="print()">PRINT CERTIFICATE</div>
             </div>
             <hr />
+            <b-alert v-if="proved" variant="success" show>You've successfully recognized the owner!</b-alert>
             <b-button
               v-b-modal.modal-id
               variant="info"
+              v-if="!proved"
               v-on:click="startOwnershipProof"
-            >Proof the ownership of the address</b-button>
-            <b-modal id="modal-id" title="Proof the ownership of the address">
+            >Prove ownership of the address</b-button>
+            <b-modal v-if="!proved" id="modal-id" title="Prove ownership of the address">
               <p class="my-4" style="text-align:center">
                 Please ask the owner to open its Manent App and scan the QR code with the
                 <b>remote sign</b> feature.
@@ -134,8 +136,8 @@
 <script>
 import axios from "axios";
 const fileType = require("file-type");
-const ScryptaCore = require('@scrypta/core')
-import VueQrcode from 'vue-qrcode'
+const ScryptaCore = require("@scrypta/core");
+import VueQrcode from "vue-qrcode";
 
 export default {
   name: "Explorer",
@@ -149,7 +151,8 @@ export default {
       isLoading: true,
       isDecrypting: false,
       fileType: fileType,
-      ownershipAddress: '',
+      ownershipAddress: "",
+      proved: false,
       scrypta: new ScryptaCore(true),
       data: {},
       decryptPwd: "",
@@ -160,7 +163,7 @@ export default {
   async mounted() {
     const app = this;
     app.idanode = await window.ScryptaCore.connectNode();
-    localStorage.setItem('messages', '[]')
+    localStorage.setItem("messages", "[]");
     let check = await app.axios.get(app.idanode + "/wallet/getinfo");
     if (check.data.blocks > 0) {
       let readreturn = await app.axios.post(app.idanode + "/read", {
@@ -187,25 +190,28 @@ export default {
   },
   methods: {
     async startOwnershipProof() {
-      const app = this
-      app.scrypta.staticnodes = true
-      let newaddress = await app.scrypta.createAddress('new', false)
-      app.ownershipAddress = newaddress.pub
-      app.scrypta.connectP2P(function(data){
-        try{
-          let object = JSON.parse(data.message)
-          if(object.request === newaddress.pub && object.protocol === 'ownership://'){
-            if(data.address === app.data.address){
-              alert('Ownership prooved!')
-              app.prooved = true
-            }else{
-              alert('This address isnt\'t the owner!')
+      const app = this;
+      app.scrypta.staticnodes = true;
+      let newaddress = await app.scrypta.createAddress("new", false);
+      app.ownershipAddress = newaddress.pub;
+      app.scrypta.connectP2P(function (data) {
+        try {
+          let object = JSON.parse(data.message);
+          if (
+            object.request === newaddress.pub &&
+            object.protocol === "ownership://"
+          ) {
+            if (data.address === app.data.address) {
+              alert("Ownership proved!");
+              app.proved = true;
+            } else {
+              alert("This address isnt't the owner!");
             }
           }
-        }catch(e){
-          app.error = e
+        } catch (e) {
+          app.error = e;
         }
-      })
+      });
     },
     print() {
       window.print();

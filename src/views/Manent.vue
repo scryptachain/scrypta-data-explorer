@@ -8,16 +8,25 @@
         <h5 style="margin-top:20px; font-size:18px">
           This data have been notarized
           <br v-if="data.provider !== undefined" />
-          <span
-            v-if="data.provider !== undefined"
-            style="font-size:18px"
-          >using provider<br><span
-            v-if="providers[data.provider] !== undefined"
-            style="font-size:20px"
-          ><br><b>{{ providers[data.provider] }}</b></span><br><b style="font-size:11px">{{ data.provider.substr(0,6) }}...{{ data.provider.substr(-6) }}</b></span>
+          <span v-if="data.provider !== undefined" style="font-size:18px">
+            using provider
+            <br />
+            <span v-if="providers[data.provider] !== undefined" style="font-size:20px">
+              <br />
+              <b>{{ providers[data.provider] }}</b>
+            </span>
+            <br />
+            <b
+              style="font-size:11px"
+            >{{ data.provider.substr(0,6) }}...{{ data.provider.substr(-6) }}</b>
+          </span>
         </h5>
         <div v-if="isLoading" style="padding:20vh 0">Loading data, please wait...</div>
-        <div v-if="!isLoading && data.data !== undefined" class="card" style="width: 100%; margin-top:20px">
+        <div
+          v-if="!isLoading && data.data !== undefined"
+          class="card"
+          style="width: 100%; margin-top:20px"
+        >
           <div class="card-body">
             <h5
               class="card-title"
@@ -70,12 +79,25 @@
                 >Attention please, identifier doesn't matches. Please be sure you've written it correctly.</b-alert>
               </div>
               <hr />
-              <b-button v-b-modal.modal-id variant="info" v-on:click="startOwnershipProof">Proof the ownership of the address</b-button>
-              <b-modal id="modal-id" title="Proof the ownership of the address">
-                <p class="my-4" style="text-align:center">Please ask the owner to open its Manent App and scan the QR code with the <b>remote sign</b> feature.</p>
+              <b-alert
+                v-if="proved"
+                variant="success"
+                show
+              >You've successfully recognized the owner!</b-alert>
+              <b-button
+                v-b-modal.modal-id
+                variant="info"
+                v-if="!proved"
+                v-on:click="startOwnershipProof"
+              >Prove ownership of the address</b-button>
+              <b-modal v-if="!proved" id="modal-id" title="Prove ownership of the address">
+                <p class="my-4" style="text-align:center">
+                  Please ask the owner to open its Manent App and scan the QR code with the
+                  <b>remote sign</b> feature.
+                </p>
                 <vue-qrcode :value="'ownership:' + ownershipAddress" style="width:100%" />
               </b-modal>
-              <hr>  
+              <hr />
               <b-card
                 v-for="file in data.data.attachments"
                 v-bind:key="file.hash"
@@ -137,7 +159,7 @@ const LZUTF8 = require("lzutf8");
 const FileType = require("file-type/browser");
 const ScryptaCore = require("@scrypta/core");
 const crypto = require("crypto");
-import VueQrcode from 'vue-qrcode'
+import VueQrcode from "vue-qrcode";
 
 export default {
   name: "Explorer",
@@ -154,23 +176,24 @@ export default {
       data: {},
       buffers: {},
       names: {},
-      ownershipAddress: '',
+      ownershipAddress: "",
       mimes: {},
       providers: {
-        "02312b96a6946285490f100dc60dcedb975b07cb80bd932be1c0357cf64e59834e": "Scrypta Manent Mail (Free Service)"
+        "02312b96a6946285490f100dc60dcedb975b07cb80bd932be1c0357cf64e59834e":
+          "Scrypta Manent Mail (Free Service)",
       },
       calculatehash: "",
-      error: '',
+      error: "",
       calculatedhash: "",
       decryptPwd: "",
-      prooved: false,
+      proved: false,
       extdate: "",
       imgb64: "",
     };
   },
   async mounted() {
     const app = this;
-    localStorage.setItem('messages', '[]')
+    localStorage.setItem("messages", "[]");
     app.idanode = await window.ScryptaCore.connectNode();
     let check = await app.axios.get(app.idanode + "/wallet/getinfo");
     if (check.data.blocks > 0) {
@@ -193,8 +216,8 @@ export default {
             app.data.data.message
           );
           if (verify !== false) {
-            app.data.provider = app.data.data.pubkey
-            app.data.fingerprint = app.data.data.signature
+            app.data.provider = app.data.data.pubkey;
+            app.data.fingerprint = app.data.data.signature;
             app.data.data = JSON.parse(app.data.data.message);
             if (
               app.data.data.plaintext !== undefined &&
@@ -257,8 +280,8 @@ export default {
             let time = app.data["time"] * 1000;
             app.extdate = new Date(time).toUTCString();
             delete app.data["_id"];
-          }else{
-            alert('Can\'t verify provider signature!')
+          } else {
+            alert("Can't verify provider signature!");
           }
         }
       }
@@ -267,28 +290,31 @@ export default {
   },
   methods: {
     async startOwnershipProof() {
-      const app = this
-      app.scrypta.staticnodes = true
-      let newaddress = await app.scrypta.createAddress('new', false)
-      app.ownershipAddress = newaddress.pub
-      app.scrypta.connectP2P(function(data){
-        try{
-          let object = JSON.parse(data.message)
-          if(object.request === newaddress.pub && object.protocol === 'ownership://'){
-            if(data.address === app.data.address){
-              alert('Ownership prooved!')
-              app.prooved = true
-            }else{
-              alert('This address isnt\'t the owner!')
+      const app = this;
+      app.scrypta.staticnodes = true;
+      let newaddress = await app.scrypta.createAddress("new", false);
+      app.ownershipAddress = newaddress.pub;
+      app.scrypta.connectP2P(function (data) {
+        try {
+          let object = JSON.parse(data.message);
+          if (
+            object.request === newaddress.pub &&
+            object.protocol === "ownership://"
+          ) {
+            if (data.address === app.data.address) {
+              alert("Ownership proved!");
+              app.proved = true;
+            } else {
+              alert("This address isnt't the owner!");
             }
           }
-        }catch(e){
-          app.error = e
+        } catch (e) {
+          app.error = e;
         }
-      })
+      });
     },
     runHashCheck() {
-      const app = this
+      const app = this;
       let checkhash = crypto
         .createHash("sha256")
         .update(app.calculatehash)
