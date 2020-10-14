@@ -230,7 +230,7 @@ export default {
       ownershipAddress: "",
       mimes: {},
       providers: {
-        "02312b96a6946285490f100dc60dcedb975b07cb80bd932be1c0357cf64e59834e":
+        "029c6bb0eb43def26887c596f0a3beaf9b5189c4fe3e575a4965c25fba250ac794":
           "Scrypta Manent Mail (Free Service)",
       },
       calculatehash: "",
@@ -256,9 +256,6 @@ export default {
       });
       for (let i in readreturn.data.data) {
         if (readreturn.data.data[i].uuid !== undefined) {
-          let refID = LZUTF8.decompress(readreturn.data.data[i].refID, {
-            inputEncoding: "Base64",
-          });
           app.data = readreturn.data.data[i];
           if (app.data.protocol !== "manent://") {
             alert("Protocol doesn't matches, redirecting!");
@@ -282,6 +279,14 @@ export default {
                 { inputEncoding: "Base64" }
               );
             }
+
+            if(app.data.data.subject){
+              app.data.data.subject = LZUTF8.decompress(
+                app.data.data.subject,
+                { inputEncoding: "Base64" }
+              )
+            }
+
             if (
               app.data.data.attachments !== undefined &&
               app.data.data.attachments.length > 0
@@ -330,7 +335,6 @@ export default {
                 }
               }
             }
-            app.data.refID = refID;
             let time = app.data["time"] * 1000;
             app.extdate = new Date(time).toUTCString();
             delete app.data["_id"];
