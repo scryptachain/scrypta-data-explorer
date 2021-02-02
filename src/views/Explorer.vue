@@ -85,15 +85,15 @@
                 >
                   {{ data.refID }}
                 </h5>
-                <div v-if="data.mime">
+                <div v-if="data.mime && data.is_file">
                   <img
-                    :src="idanode + '/ipfs/' + data.data"
+                    :src="idanode + '/ipfs/' + data"
                     width="100%"
                     v-if="data.mime.type === 'image'"
                   />
                   IPFS hash:
-                  <a :href="idanode + '/ipfs/' + data.data" target="_blank">{{
-                    data.data
+                  <a :href="idanode + '/ipfs/' + data" target="_blank">{{
+                    data
                   }}</a
                   ><br />
                   <span v-if="data.mime.mime"
@@ -103,7 +103,7 @@
                 <p v-if="data.is_file === false" class="card-text">
                   <span v-if="data.protocol"
                     ><b>{{ data.protocol }}</b></span
-                  >{{ data.data }}
+                  >{{ data }}
                 </p>
                 <div style="text-align: center">
                   UUID is <a :href="'/#/uuid/' + data.uuid">{{ data.uuid }}</a
@@ -118,14 +118,6 @@
                     style="margin: 10px"
                     class="btn btn-primary"
                     >Show details</a
-                  >
-                  <a
-                    v-if="data.is_file === true"
-                    :href="idanode + '/ipfs/' + data.data"
-                    target="_blank"
-                    style="margin: 10px"
-                    class="btn btn-primary"
-                    >Download file</a
                   >
                 </div>
               </div>
@@ -163,13 +155,13 @@
                 </h5>
                 <div v-if="data.mime && data.is_file">
                   <img
-                    :src="idanode + '/ipfs/' + data.data"
+                    :src="idanode + '/ipfs/' + data"
                     width="100%"
                     v-if="data.mime.type === 'image'"
                   />
                   IPFS hash:
-                  <a :href="idanode + '/ipfs/' + data.data" target="_blank">{{
-                    data.data
+                  <a :href="idanode + '/ipfs/' + data" target="_blank">{{
+                    data
                   }}</a
                   ><br />
                   <span v-if="data.mime.mime"
@@ -183,8 +175,8 @@
                     v-if="data.mime.type === 'image'"
                   />
                   IPFS hash:
-                  <a :href="idanode + '/ipfs/' + data.data" target="_blank">{{
-                    data.data
+                  <a :href="idanode + '/ipfs/' + data" target="_blank">{{
+                    data
                   }}</a
                   ><br />
                   <span v-if="data.mime.mime"
@@ -194,7 +186,7 @@
                 <p v-if="data.is_file === false" class="card-text">
                   <span v-if="data.protocol"
                     ><b>{{ data.protocol }}</b></span
-                  >{{ data.data }}
+                  >{{ data }}
                 </p>
                 <div style="text-align: center">
                   UUID is <a :href="'/#/uuid/' + data.uuid">{{ data.uuid }}</a
@@ -214,7 +206,7 @@
                   >
                   <a
                     v-if="data.is_file === true"
-                    :href="idanode + '/ipfs/' + data.data"
+                    :href="idanode + '/ipfs/' + data"
                     target="_blank"
                     style="margin: 10px"
                     class="btn btn-primary"
@@ -233,7 +225,7 @@
 <script>
 import bans from "../bans.json";
 import axios from "axios";
-const ft = require("file-type");
+const ScryptaCore = require('@scrypta/core')
 
 export default {
   name: "Explorer",
@@ -249,15 +241,13 @@ export default {
       filter_collection: "",
       filter_refid: "",
       filter_protocol: "",
+      scrypta: new ScryptaCore(true)
     };
   },
   async mounted() {
     const app = this;
-    app.idanode = await window.ScryptaCore.connectNode();
-    let check = await app.axios.get(app.idanode + "/wallet/getinfo");
-    if (check.data.blocks > 0) {
-      app.filterData();
-    }
+    app.scrypta.staticnodes = true
+    app.filterData()
   },
   methods: {
     async filterData() {
@@ -287,51 +277,29 @@ export default {
       }
       var readreturn = [];
       if (!hasFilter) {
-        readreturn = await app.axios.post(app.idanode + "/read");
+        readreturn = await app.scrypta.post("/read");
       } else {
-        readreturn = await app.axios.post(app.idanode + "/read", filters);
+        readreturn = await app.scrypta.post("/read", filters);
       }
-      for (let i in readreturn.data.data) {
+      for (let i in readreturn.data) {
         if (
-          readreturn.data.data[i].uuid !== undefined &&
-          app.bans.uuids.indexOf(readreturn.data.data[i].uuid) === -1
+          readreturn.data[i].uuid !== undefined &&
+          app.bans.uuids.indexOf(readreturn.data[i].uuid) === -1
         ) {
-          if (readreturn.data.data[i].is_file === true) {
-            let mime = await app.axios.get(
-              app.idanode + "/ipfs/type/" + readreturn.data.data[i].data
+          if (readreturn.data[i].is_file === true) {
+            let mime = await app.scrypta.get(
+              "/ipfs/type/" + readreturn.data[i].data
             );
-            readreturn.data.data[i].mime = mime.data.data;
-            app.last.push(readreturn.data.data[i]);
-          } else if (readreturn.data.data[i].protocol === "documenta://") {
-            let message = JSON.parse(readreturn.data.data[i].data.message);
-            let buffer = await app.axios.get(
-              app.idanode +
-                "/documenta/" +
-                readreturn.data.data[i].address +
-                "/" +
-                message.file
-            );
-             readreturn.data.data[i].documentaURL = app.idanode +
-                "/documenta/" +
-                readreturn.data.data[i].address +
-                "/" +
-                message.file
-            readreturn.data.data[i].buffer = buffer.data;
-            let filetype = await ft.fromBuffer(buffer.data);
-            try {
-              readreturn.data.data[i].mime = filetype;
-            } catch (e) {
-              console.log("Can't take mime");
-            }
-            app.last.push(readreturn.data.data[i]);
+            readreturn.data[i].mime = mime.data;
+            app.last.push(readreturn.data[i]);
           } else {
-            app.last.push(readreturn.data.data[i]);
+            app.last.push(readreturn.data[i]);
           }
           if (
-            readreturn.data.data[i].block === undefined ||
-            readreturn.data.data[i].block === null
+            readreturn.data[i].block === undefined ||
+            readreturn.data[i].block === null
           ) {
-            app.unconfirmedTxs.push(readreturn.data.data[i]);
+            app.unconfirmedTxs.push(readreturn.data[i]);
           }
         }
       }

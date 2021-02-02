@@ -3,15 +3,21 @@
     <div class="row">
       <div class="col-12">
         <div class="show-print">
-          <img src="../assets/logo.png" width="100" style="margin-bottom:20px" />
+          <img
+            src="../assets/logo.png"
+            width="100"
+            style="margin-bottom: 20px"
+          />
         </div>
-        <h5 style="margin-top:20px">
+        <h5 style="margin-top: 20px">
           Proof of Existence for
           <br />
-          <span style="font-size:15px">{{ $route.params.uuid }}</span>
+          <span style="font-size: 15px">{{ $route.params.uuid }}</span>
         </h5>
-        <div v-if="isLoading" style="padding:45vh 0 0 0">Loading data, please wait...</div>
-        <div class="show-print" style="margin-top:30px">
+        <div v-if="isLoading" style="padding: 45vh 0 0 0">
+          Loading data, please wait...
+        </div>
+        <div class="show-print" style="margin-top: 30px">
           This data have been timestamped using Scrypta Blockchain and
           <br />is maintained over the Scrypta Network.
           <br />
@@ -22,33 +28,83 @@
           <br />the blockchain or using the IdANode technology.
           <br />
           <br />
-          The owner of the address {{ data.address }}
-          <br />that owns the relative private key is the legal owner of this data.
+          The owner of the address {{ data.address }} <br />that owns the
+          relative private key is the legal owner of this data.
         </div>
-        <div v-if="!isLoading" class="card" style="width: 100%; margin-top:20px">
+        <div
+          v-if="!isLoading"
+          class="card"
+          style="width: 100%; margin-top: 20px"
+        >
           <div class="card-body">
             <h5
               class="card-title"
-              v-if="data.title !== undefined && data.title !== 'undefined' && data.title !== ''"
-            >{{ data.title }}</h5>
+              v-if="
+                data.title !== undefined &&
+                data.title !== 'undefined' &&
+                data.title !== ''
+              "
+            >
+              {{ data.title }}
+            </h5>
             <h5
               class="card-title"
-              v-if="data.refID !== undefined && data.refID !== 'undefined' && data.refID !== ''"
-            >{{ data.refID }}</h5>
-            <div v-if="data.mime">
+              v-if="
+                data.refID !== undefined &&
+                data.refID !== 'undefined' &&
+                data.refID !== ''
+              "
+            >
+              {{ data.refID }}
+            </h5>
+            <div v-if="data.mime && data.is_file">
               <img
-                :src="idanode + '/ipfs/' + data.data"
+                :src="idanode + '/ipfs/' + data"
                 width="100%"
-                style="margin-bottom:15px"
+                style="margin-bottom: 15px"
                 v-if="data.mime.type === 'image'"
               />
             </div>
+            <div
+              v-if="
+                data.documentaURL !== undefined &&
+                data.mime &&
+                data.mime.indexOf('image') !== -1
+              "
+            >
+              Documenta image is:<br /><br />
+              <img
+                :src="data.documentaURL"
+                width="100%"
+                style="margin-bottom: 15px"
+              />
+            </div>
+            <div
+              v-if="
+                data.documentaURL !== undefined &&
+                data.mime &&
+                data.mime.indexOf('image') === -1
+              "
+            >
+              Documenta file is:<br />
+              <a :href="data.documentaURL" target="_blank">{{
+                data.documentaURL
+              }}</a
+              ><br /><br />
+            </div>
             <div v-if="imgb64">
-              <img :src="imgb64" v-if="imgb64" style="margin-bottom:15px" width="100%" />
+              <img
+                :src="imgb64"
+                v-if="imgb64"
+                style="margin-bottom: 15px"
+                width="100%"
+              />
             </div>
             <div v-if="data.is_file === true">
               IPFS hash:
-              <a :href="idanode + '/ipfs/' + data.data" target="_blank">{{data.data}}</a>
+              <a :href="idanode + '/ipfs/' + data" target="_blank">{{
+                data
+              }}</a>
               <br />
             </div>
             <div v-if="data.mime">
@@ -57,8 +113,13 @@
                 <br />
               </span>
             </div>
-            <p v-if="data.is_file === false" class="card-text">{{ data.data }}</p>
-            <div style="text-align:center">
+            <p
+              v-if="data.is_file === false && data.documentaURL === undefined"
+              class="card-text"
+            >
+              {{ data }}
+            </p>
+            <div style="text-align: center">
               UUID is
               <a :href="'/#/uuid/' + data.uuid">{{ data.uuid }}</a>
               <br />Written by
@@ -70,28 +131,42 @@
             </div>
             <br class="hide-print" />
             <br class="hide-print" />
-            <div style="text-align:center">
-              <div class="btn btn-success hide-print" v-on:click="print()">PRINT CERTIFICATE</div>
+            <div style="text-align: center">
+              <div class="btn btn-success hide-print" v-on:click="print()">
+                PRINT CERTIFICATE
+              </div>
             </div>
             <hr />
-            <b-alert v-if="proved" variant="success" show>You've successfully recognized the owner!</b-alert>
+            <b-alert v-if="proved" variant="success" show
+              >You've successfully recognized the owner!</b-alert
+            >
             <b-button
               v-b-modal.modal-id
               variant="info"
               v-if="!proved"
               v-on:click="startOwnershipProof"
-            >Prove ownership of the address</b-button>
-            <b-modal v-if="!proved" id="modal-id" title="Prove ownership of the address">
-              <p class="my-4" style="text-align:center">
-                Please ask the owner to open its Manent App and scan the QR code with the
+              >Prove ownership of the address</b-button
+            >
+            <b-modal
+              v-if="!proved"
+              id="modal-id"
+              title="Prove ownership of the address"
+            >
+              <p class="my-4" style="text-align: center">
+                Please ask the owner to open its Manent App and scan the QR code
+                with the
                 <b>remote sign</b> feature.
               </p>
-              <vue-qrcode :value="'ownership:' + ownershipAddress" style="width:100%" />
+              <vue-qrcode
+                :value="'ownership:' + ownershipAddress"
+                style="width: 100%"
+              />
             </b-modal>
             <hr />
             <br class="hide-print" />
             <div v-if="data.protocol === 'E://'" class="hide-print">
-              <hr />This
+              <hr />
+              This
               <span v-if="data.is_file === true">file</span>
               <span v-if="data.is_file === false">data</span> is encrypted.
               <br />Write password to reveal decrypted
@@ -110,12 +185,16 @@
                   v-if="data.is_file === true"
                   class="btn btn-primary"
                   v-on:click="decryptFile()"
-                >DECRYPT FILE</div>
+                >
+                  DECRYPT FILE
+                </div>
                 <div
                   v-if="data.is_file === false"
                   class="btn btn-primary"
                   v-on:click="decryptData()"
-                >DECRYPT DATA</div>
+                >
+                  DECRYPT DATA
+                </div>
               </div>
               <div v-if="isDecrypting">Decrypting, please wait...</div>
             </div>
@@ -123,9 +202,9 @@
         </div>
         <br />
         <h5>Raw data explorer</h5>
-        <div class="card" style="width: 100%; margin-top:20px">
+        <div class="card" style="width: 100%; margin-top: 20px">
           <div class="card-body">
-            <pre style="text-align:left">{{ data }}</pre>
+            <pre style="text-align: left">{{ data }}</pre>
           </div>
         </div>
       </div>
@@ -138,6 +217,7 @@ import axios from "axios";
 const fileType = require("file-type");
 const ScryptaCore = require("@scrypta/core");
 import VueQrcode from "vue-qrcode";
+var LZUTF8 = require('lzutf8');
 
 export default {
   name: "Explorer",
@@ -162,39 +242,58 @@ export default {
   },
   async mounted() {
     const app = this;
-    app.idanode = await window.ScryptaCore.connectNode();
+    app.scrypta.staticnodes = true;
     localStorage.setItem("messages", "[]");
-    let check = await app.axios.get(app.idanode + "/wallet/getinfo");
-    if (check.data.blocks > 0) {
-      let readreturn = await app.axios.post(app.idanode + "/read", {
-        uuid: app.$route.params.uuid,
-      });
-      for (let i in readreturn.data.data) {
-        if (readreturn.data.data[i].uuid !== undefined) {
-          if(readreturn.data.data[i].protocol === 'manent://'){
-            window.location = '/#/manent/' + readreturn.data.data[i].uuid + '/verify'
-          }
-          if (readreturn.data.data[i].is_file === true) {
-            let mime = await app.axios.get(
-              app.idanode + "/ipfs/type/" + readreturn.data.data[i].data
-            );
-            readreturn.data.data[i].mime = mime.data.data;
-            app.data = readreturn.data.data[i];
-          } else {
-            app.data = readreturn.data.data[i];
-          }
-          let time = app.data["time"] * 1000;
-          app.extdate = new Date(time).toUTCString();
-          delete app.data["id"];
+    let readreturn = await app.scrypta.post("/read", {
+      uuid: app.$route.params.uuid,
+    });
+
+    for (let i in readreturn.data) {
+      if (readreturn.data[i].uuid !== undefined) {
+        if (readreturn.data[i].protocol === "manent://") {
+          window.location = "/#/manent/" + readreturn.data[i].uuid + "/verify";
         }
+        if (readreturn.data[i].is_file === true) {
+          let mime = await app.axios.get(
+            app.idanode + "/ipfs/type/" + readreturn.data[i].data
+          );
+          readreturn.data[i].mime = mime.data;
+          app.data = readreturn.data[i];
+        } else if (readreturn.data[i].protocol === "documenta://") {
+          app.data = readreturn.data[i];
+          let message = JSON.parse(readreturn.data[i].data.message);
+          let buffer = await app.axios.get(
+            app.idanode +
+              "/documenta/" +
+              readreturn.data[i].address +
+              "/" +
+              message.file
+          );
+          readreturn.data[i].documentaURL =
+            app.idanode +
+            "/documenta/" +
+            readreturn.data[i].address +
+            "/" +
+            message.file;
+          readreturn.data[i].mime = buffer.headers["content-type"];
+          if(readreturn.data[i].refID !== ""){
+            try{
+              readreturn.data[i].refID = LZUTF8.decompress(readreturn.data[i].refID, { inputEncoding: "Base64" });
+            }catch(e){}
+          }
+        } else {
+          app.data = readreturn.data[i];
+        }
+        let time = app.data["time"] * 1000;
+        app.extdate = new Date(time).toUTCString();
+        delete app.data["id"];
       }
-      app.isLoading = false;
     }
+    app.isLoading = false;
   },
   methods: {
     async startOwnershipProof() {
       const app = this;
-      app.scrypta.staticnodes = true;
       let newaddress = await app.scrypta.createAddress("new", false);
       app.ownershipAddress = newaddress.pub;
       app.scrypta.connectP2P(function (data) {
@@ -223,58 +322,55 @@ export default {
       const app = this;
       if (app.isDecrypting === false && app.decryptPwd.length > 0) {
         app.isDecrypting = true;
-        app.axios
-          .get(app.idanode + "/ipfs/buffer/" + app.data.data)
-          .then((ipfs) => {
-            let data = ipfs.data.data[0].content.data;
-            window.ScryptaCore.decryptFile(data, app.decryptPwd).then(
-              async (decrypted) => {
-                if (decrypted !== false) {
-                  let type = await app.fileType.fromBuffer(decrypted);
-                  app.data.protocol = "";
-                  var saveByteArray = (function () {
-                    var a = document.createElement("a");
-                    document.body.appendChild(a);
-                    a.style = "display: none";
-                    return function (data, name) {
-                      var blob = new Blob(data, { type: "octet/stream" });
-                      let mimexp = type.mime.split("/");
-                      if (mimexp[0] === "image") {
-                        var reader = new FileReader();
-                        reader.onload = function () {
-                          var bdata = btoa(reader.result);
-                          var datauri =
-                            "data:" + type.mime + ";base64," + bdata;
-                          app.imgb64 = datauri;
-                        };
-                        reader.readAsBinaryString(blob);
-                      } else {
-                        var url = window.URL.createObjectURL(blob);
-                        a.href = url;
-                        a.download = name;
-                        a.click();
-                        window.URL.revokeObjectURL(url);
-                      }
-                      app.isDecrypting = false;
-                    };
-                  })();
+        app.axios.get(app.idanode + "/ipfs/buffer/" + app.data).then((ipfs) => {
+          let data = ipfs.data[0].content.data;
+          window.ScryptaCore.decryptFile(data, app.decryptPwd).then(
+            async (decrypted) => {
+              if (decrypted !== false) {
+                let type = await app.fileType.fromBuffer(decrypted);
+                app.data.protocol = "";
+                var saveByteArray = (function () {
+                  var a = document.createElement("a");
+                  document.body.appendChild(a);
+                  a.style = "display: none";
+                  return function (data, name) {
+                    var blob = new Blob(data, { type: "octet/stream" });
+                    let mimexp = type.mime.split("/");
+                    if (mimexp[0] === "image") {
+                      var reader = new FileReader();
+                      reader.onload = function () {
+                        var bdata = btoa(reader.result);
+                        var datauri = "data:" + type.mime + ";base64," + bdata;
+                        app.imgb64 = datauri;
+                      };
+                      reader.readAsBinaryString(blob);
+                    } else {
+                      var url = window.URL.createObjectURL(blob);
+                      a.href = url;
+                      a.download = name;
+                      a.click();
+                      window.URL.revokeObjectURL(url);
+                    }
+                    app.isDecrypting = false;
+                  };
+                })();
 
-                  saveByteArray([decrypted], app.data.data + "." + type.ext);
-                } else {
-                  app.isDecrypting = false;
-                  alert("Wrong password!");
-                }
+                saveByteArray([decrypted], app.data + "." + type.ext);
+              } else {
+                app.isDecrypting = false;
+                alert("Wrong password!");
               }
-            );
-          });
+            }
+          );
+        });
       }
     },
     decryptData() {
       const app = this;
-      window.ScryptaCore.decryptData(app.data.data, app.decryptPwd).then(
+      window.ScryptaCore.decryptData(app.data, app.decryptPwd).then(
         (decrypted) => {
           if (decrypted !== false) {
-            app.data.data = decrypted;
+            app.data = decrypted;
             app.data.protocol = "";
           } else {
             alert("Wrong password!");
