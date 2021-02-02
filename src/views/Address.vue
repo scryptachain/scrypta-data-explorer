@@ -58,7 +58,6 @@ export default {
         if(readreturn.data.data[i].uuid !== undefined){
           if(readreturn.data.data[i].is_file === true){
             let mime = await app.axios.get(app.idanode + '/ipfs/type/' + readreturn.data.data[i].data).catch(err => {
-              console.log(err)
               alert('There\'s an error on IdaNode, please retry!')
             })
             readreturn.data.data[i].mime = mime.data.data
